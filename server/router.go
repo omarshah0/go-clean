@@ -48,13 +48,13 @@ func setupRoutes(rawRouter *gin.Engine, storage storage.Storage) error {
 	driverRoutes := router.Group("/admin")
 	driverRoutes.Use(middleware.AuthMiddleware("admin"))
 	driverRoutes.Use(middleware.Logging())
-	driverRoutes.GET("/ping", handlePingRoute(storage))
+	driverRoutes.GET("/", handleUserRoutes(storage))
 
 	// Customer Routes
 	customerRoutes := router.Group("/customer")
 	customerRoutes.Use(middleware.AuthMiddleware("customer"))
 	customerRoutes.Use(middleware.Logging())
-	customerRoutes.GET("/ping", handlePingRoute(storage))
+	customerRoutes.GET("/", handleUserRoutes(storage))
 
 	// Not Found
 	router.Use(middleware.Logging())
@@ -76,7 +76,7 @@ func handleLoginRoute(storage storage.Storage) gin.HandlerFunc {
 	}
 }
 
-func handlePingRoute(storage storage.Storage) gin.HandlerFunc {
+func handleUserRoutes(storage storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		response, err := handlers.HandleGetAllUsers(storage)
 

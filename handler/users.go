@@ -28,17 +28,17 @@ func HandleLoginUser(s storage.Storage) (string, *types.HandlerErrorResponse) {
 	return token, nil
 }
 
-func HandleGetAllUsers(s storage.Storage) (string, *types.HandlerErrorResponse) {
+func HandleGetAllUsers(s storage.Storage) ([]*types.User, *types.HandlerErrorResponse) {
 	users, err := s.GetAllUsers()
 
 	if err != nil {
 		errorResponse := &types.HandlerErrorResponse{
-			Type:       "Validation",
-			Message:    "Validation failed. Please resubmit your request.",
-			Error:      "This is Error From User Handler",
-			StatusCode: 400,
+			Type:       "InternalError",
+			Message:    "Internal Server Error",
+			Error:      err,
+			StatusCode: 500,
 		}
-		return "", errorResponse
+		return nil, errorResponse
 	}
 
 	return users, nil
