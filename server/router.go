@@ -39,7 +39,9 @@ func sendSuccessResponse(c *gin.Context, data interface{}, statusCode int) {
 	})
 }
 
-func setupRoutes(router *gin.Engine, storage storage.Storage) error {
+func setupRoutes(rawRouter *gin.Engine, storage storage.Storage) error {
+	router := rawRouter.Group("/api/v1")
+
 	// Auth Routes
 	router.GET("/auth", handleLoginRoute(storage))
 	// Admin Routes
@@ -56,7 +58,7 @@ func setupRoutes(router *gin.Engine, storage storage.Storage) error {
 
 	// Not Found
 	router.Use(middleware.Logging())
-	router.NoRoute(handleNotFoundRoute)
+	rawRouter.NoRoute(handleNotFoundRoute)
 	return nil
 }
 
@@ -92,6 +94,7 @@ func handleNotFoundRoute(c *gin.Context) {
 	sendErrorResponse(c, &types.HandlerErrorResponse{
 		Type:       "NotFound",
 		Message:    "Not Found",
+		Error:      "Endpoint not defined",
 		StatusCode: 404,
 	})
 }
