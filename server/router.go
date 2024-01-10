@@ -23,9 +23,9 @@ func getTraceID(c *gin.Context) string {
 	return traceIDStr
 }
 
-func sendErrorResponse(c *gin.Context, err *types.HandlerErrorResponse, statusCode int) {
+func sendErrorResponse(c *gin.Context, err *types.HandlerErrorResponse) {
 	traceID := getTraceID(c)
-	c.JSON(statusCode, &types.ErrorResponse{
+	c.JSON(err.StatusCode, &types.ErrorResponse{
 		Type:    err.Type,
 		Trace:   traceID,
 		Message: err.Message,
@@ -40,17 +40,19 @@ func sendSuccessResponse(c *gin.Context, data interface{}, statusCode int) {
 }
 
 func setupRoutes(router *gin.Engine, storage storage.Storage) error {
+	// Auth Routes
+	router.GET("/auth", handleLoginRoute(storage))
+	// Admin Routes
+	driverRoutes := router.Group("/admin")
+	driverRoutes.Use(middleware.AuthMiddleware("admin"))
+	driverRoutes.Use(middleware.Logging())
+	driverRoutes.GET("/ping", handlePingRoute(storage))
+
 	// Customer Routes
 	customerRoutes := router.Group("/customer")
 	customerRoutes.Use(middleware.AuthMiddleware("customer"))
 	customerRoutes.Use(middleware.Logging())
 	customerRoutes.GET("/ping", handlePingRoute(storage))
-
-	// Driver Routes
-	driverRoutes := router.Group("/driver")
-	driverRoutes.Use(middleware.AuthMiddleware("driver"))
-	driverRoutes.Use(middleware.Logging())
-	driverRoutes.GET("/ping", handlePingRoute(storage))
 
 	// Not Found
 	router.Use(middleware.Logging())
@@ -58,12 +60,26 @@ func setupRoutes(router *gin.Engine, storage storage.Storage) error {
 	return nil
 }
 
+func handleLoginRoute(storage storage.Storage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		response, err := handlers.HandleLoginUser(storage)
+
+		if err != nil {
+			sendErrorResponse(c, err)
+			return
+		}
+
+		sendSuccessResponse(c, response, 200)
+
+	}
+}
+
 func handlePingRoute(storage storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		response, err := handlers.HandleGetAllUsers(storage)
 
 		if err != nil {
-			sendErrorResponse(c, err, 400)
+			sendErrorResponse(c, err)
 			return
 		}
 
@@ -74,7 +90,8 @@ func handlePingRoute(storage storage.Storage) gin.HandlerFunc {
 
 func handleNotFoundRoute(c *gin.Context) {
 	sendErrorResponse(c, &types.HandlerErrorResponse{
-		Type:    "NotFound",
-		Message: "Not Found",
-	}, 404)
+		Type:       "NotFound",
+		Message:    "Not Found",
+		StatusCode: 404,
+	})
 }

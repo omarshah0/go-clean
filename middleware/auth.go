@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/omarshah0/go-clean-architecture/types"
 )
 
 var secrets = map[string]string{
@@ -77,9 +78,9 @@ func AuthMiddleware(userType string) gin.HandlerFunc {
 }
 
 // GenerateToken generates a JWT token with the given user type
-func GenerateToken(userType string) (string, error) {
+func GenerateToken(user *types.User) (string, error) {
 	// Get the secret key for the user type
-	secret, ok := secrets[userType]
+	secret, ok := secrets[string(user.Type)]
 	if !ok {
 		return "", fmt.Errorf("Invalid user type")
 	}
@@ -87,8 +88,8 @@ func GenerateToken(userType string) (string, error) {
 	// Create the token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id":    1,
-		"user_email": "oemyoem55@gmail.com",
-		"user_type":  userType,
+		"user_email": user.Email,
+		"user_type":  user.Type,
 		"exp":        time.Now().Add(time.Hour * 24).Unix(),
 	})
 
