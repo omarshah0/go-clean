@@ -48,7 +48,7 @@ func setupRoutes(rawRouter *gin.Engine, storage storage.Storage) error {
 	driverRoutes := router.Group("/admin")
 	driverRoutes.Use(middleware.AuthMiddleware("admin"))
 	driverRoutes.Use(middleware.Logging())
-	driverRoutes.GET("/", handleUserRoutes(storage))
+	driverRoutes.POST("/", handleUserRoutes(storage))
 
 	// Customer Routes
 	customerRoutes := router.Group("/customer")
