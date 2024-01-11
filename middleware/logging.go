@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type bodyLogWriter struct {
+type BodyLogWriter struct {
 	gin.ResponseWriter
 	body *bytes.Buffer
 }
@@ -31,9 +31,18 @@ type LogEntry struct {
 	ResponseBody string
 }
 
-func (w bodyLogWriter) Write(b []byte) (int, error) {
+func (w BodyLogWriter) Write(b []byte) (int, error) {
 	w.body.Write(b)
 	return w.ResponseWriter.Write(b)
+}
+
+func readBody(c *gin.Context) string {
+	var bodyBytes []byte
+	if c.Request.Body != nil {
+		bodyBytes, _ = io.ReadAll(c.Request.Body)
+	}
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+	return string(bodyBytes)
 }
 
 func Logging() gin.HandlerFunc {
@@ -44,7 +53,7 @@ func Logging() gin.HandlerFunc {
 		payload := readBody(c)
 
 		// Write the response body to a buffer
-		writer := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
+		writer := &BodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 		c.Writer = writer
 
 		// Process request
@@ -52,7 +61,8 @@ func Logging() gin.HandlerFunc {
 
 		// Log after processing the request
 		endTime := time.Now()
-		logEntry := LogEntry{
+
+		logEntry := &LogEntry{
 			Method:       c.Request.Method,
 			IPAddress:    c.ClientIP(),
 			Path:         c.Request.URL.Path,
@@ -70,16 +80,7 @@ func Logging() gin.HandlerFunc {
 	}
 }
 
-func readBody(c *gin.Context) string {
-	var bodyBytes []byte
-	if c.Request.Body != nil {
-		bodyBytes, _ = io.ReadAll(c.Request.Body)
-	}
-	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-	return string(bodyBytes)
-}
-
-func saveLogToFile(logEntry LogEntry, filename string) {
+func saveLogToFile(logEntry *LogEntry, filename string) {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatalf("failed opening file: %s", err)
