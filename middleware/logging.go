@@ -19,6 +19,7 @@ type bodyLogWriter struct {
 
 type LogEntry struct {
 	Method       string
+	IPAddress    string
 	Path         string
 	UserType     string
 	UserEmail    string
@@ -53,6 +54,7 @@ func Logging() gin.HandlerFunc {
 		endTime := time.Now()
 		logEntry := LogEntry{
 			Method:       c.Request.Method,
+			IPAddress:    c.ClientIP(),
 			Path:         c.Request.URL.Path,
 			UserType:     c.GetString("user_type"),
 			UserEmail:    c.GetString("user_email"),
@@ -89,6 +91,7 @@ func saveLogToFile(logEntry LogEntry, filename string) {
 
 	writer.Write([]string{
 		logEntry.Method,
+		logEntry.IPAddress,
 		logEntry.Path,
 		logEntry.UserType,
 		logEntry.UserEmail,
