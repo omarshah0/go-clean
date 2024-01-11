@@ -7,11 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *PostgresStore) GetAll() ([]*types.User, *types.StorageErrorResponse) {
+func (s *PostgresStore) GetAll() ([]*types.User, *types.HandlerErrorResponse) {
 	var users []*types.User
 
 	if err := s.db.Find(&users).Error; err != nil {
-		return nil, &types.StorageErrorResponse{
+		return nil, &types.HandlerErrorResponse{
 			Type:       "InternalError",
 			Message:    "Internal Server Error",
 			Error:      err.Error(),
@@ -22,25 +22,26 @@ func (s *PostgresStore) GetAll() ([]*types.User, *types.StorageErrorResponse) {
 	return users, nil
 }
 
-func (s *PostgresStore) GetById(id int) (*types.User, *types.StorageErrorResponse) {
+func (s *PostgresStore) GetById(id int) (*types.User, *types.HandlerErrorResponse) {
 	user := new(types.User)
+	result := s.db.First(&user, id)
+	err := new(types.HandlerErrorResponse)
 
-	if err := s.db.First(&user, id).Error; err != nil {
-		return nil, &types.StorageErrorResponse{
-			Type:       "NotFound",
-			Message:    err.Error(),
-			StatusCode: 404,
-			Error:      err.Error(),
-		}
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		err.Type = "NotFound"
+		err.Message = "Resource not found"
+		err.StatusCode = 404
+		err.Error = result.Error.Error()
+
+		return nil, err
 	}
 
 	return user, nil
 }
 
-func (s *PostgresStore) Create(user *types.User) (*types.User, *types.StorageErrorResponse) {
+func (s *PostgresStore) Create(user *types.User) (*types.User, *types.HandlerErrorResponse) {
 	result := s.db.Create(&user)
-
-	err := new(types.StorageErrorResponse)
+	err := new(types.HandlerErrorResponse)
 
 	if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
 		err.Type = "DuplicateError"

@@ -5,7 +5,7 @@ import (
 )
 
 type Storage interface {
-	GetAll() ([]*types.User, *types.StorageErrorResponse)
-	GetById(id int) (*types.User, *types.StorageErrorResponse)
-	Create(user *types.User) (*types.User, *types.StorageErrorResponse)
+	GetAll() ([]*types.User, *types.HandlerErrorResponse)
+	GetById(id int) (*types.User, *types.HandlerErrorResponse)
+	Create(user *types.User) (*types.User, *types.HandlerErrorResponse)
 }

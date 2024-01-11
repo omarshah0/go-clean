@@ -40,8 +40,8 @@ func HandleGetAllUsers(s storage.Storage) ([]*types.User, *types.HandlerErrorRes
 	return users, nil
 }
 
-func HandleGetUserById(s storage.Storage) (*types.User, *types.HandlerErrorResponse) {
-	user, err := s.GetById(1)
+func HandleGetUserById(id int, s storage.Storage) (*types.User, *types.HandlerErrorResponse) {
+	user, err := s.GetById(id)
 
 	if err != nil {
 		errorResponse := &types.HandlerErrorResponse{
@@ -71,13 +71,7 @@ func HandleCreateUser(user *types.User, s storage.Storage) (*types.User, *types.
 	user, err := s.Create(user)
 
 	if err != nil {
-		errorResponse := &types.HandlerErrorResponse{
-			Type:       err.Type,
-			Message:    err.Message,
-			StatusCode: err.StatusCode,
-			Error:      err.Error,
-		}
-		return nil, errorResponse
+		return nil, err
 	}
 
 	return user, nil

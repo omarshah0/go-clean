@@ -1,6 +1,8 @@
 package server
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 
 	handlers "github.com/omarshah0/go-clean-architecture/handler"
@@ -115,7 +117,22 @@ func handleCreateUser(storage storage.Storage) gin.HandlerFunc {
 
 func handleGetUserById(storage storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		response, err := handlers.HandleGetUserById(storage)
+		idStr := c.Param("id")
+		id, convErr := strconv.Atoi(idStr)
+
+		if convErr != nil {
+			errMessage := &types.HandlerErrorResponse{
+				Type:       "BadRequest",
+				Message:    "Invalid ID",
+				StatusCode: 400,
+				Error:      convErr.Error(),
+			}
+			sendErrorResponse(c, errMessage)
+			return
+		}
+
+		response, err := handlers.HandleGetUserById(id, storage)
+
 		if err != nil {
 			sendErrorResponse(c, err)
 			return
