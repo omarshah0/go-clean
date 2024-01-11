@@ -10,7 +10,7 @@ func main() {
 	config := config.NewConfig()
 
 	// Init Storage
-	store, err := storage.NewMemoryStorage(config)
+	store, err := storage.NewPostgresStorage(config)
 
 	if err != nil {
 		panic(err)

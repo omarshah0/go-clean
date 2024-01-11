@@ -15,7 +15,7 @@ type PostgresStore struct {
 }
 
 func NewPostgresStorage(config *config.Config) (*PostgresStore, error) {
-	db, err := gorm.Open(postgres.Open(config.DatabaseUrl), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(config.DatabaseUrl), &gorm.Config{TranslateError: true})
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
@@ -33,12 +33,32 @@ func NewPostgresStorage(config *config.Config) (*PostgresStore, error) {
 	}, nil
 }
 
-func (s *PostgresStore) GetAllUsers() ([]*types.User, error) {
+func (s *PostgresStore) GetAll() ([]*types.User, *types.StorageErrorResponse) {
 	var users []*types.User
 
 	if err := s.db.Find(&users).Error; err != nil {
-		return nil, err
+		return nil, &types.StorageErrorResponse{
+			Type:       "InternalError",
+			Message:    "Internal Server Error",
+			Error:      err.Error(),
+			StatusCode: 500,
+		}
 	}
 
 	return users, nil
+}
+
+func (s *PostgresStore) GetById(id int) (*types.User, *types.StorageErrorResponse) {
+	user := new(types.User)
+
+	if err := s.db.First(&user, id).Error; err != nil {
+		return nil, &types.StorageErrorResponse{
+			Type:       "NotFound",
+			Message:    err.Error(),
+			StatusCode: 404,
+			Error:      err.Error(),
+		}
+	}
+
+	return user, nil
 }

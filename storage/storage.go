@@ -5,5 +5,6 @@ import (
 )
 
 type Storage interface {
-	GetAllUsers() ([]*types.User, error)
+	GetAll() ([]*types.User, *types.StorageErrorResponse)
+	GetById(id int) (*types.User, *types.StorageErrorResponse)
 }

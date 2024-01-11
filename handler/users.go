@@ -25,17 +25,34 @@ func HandleLoginUser(s storage.Storage) (string, *types.HandlerErrorResponse) {
 }
 
 func HandleGetAllUsers(s storage.Storage) ([]*types.User, *types.HandlerErrorResponse) {
-	users, err := s.GetAllUsers()
+	users, err := s.GetAll()
 
 	if err != nil {
 		errorResponse := &types.HandlerErrorResponse{
-			Type:       "InternalError",
-			Message:    "Internal Server Error",
+			Type:       err.Type,
+			Message:    err.Message,
+			StatusCode: err.StatusCode,
 			Error:      err,
-			StatusCode: 500,
 		}
 		return nil, errorResponse
 	}
 
 	return users, nil
+}
+
+func HandleGetUserById(s storage.Storage) (*types.User, *types.HandlerErrorResponse) {
+	user, err := s.GetById(1)
+
+	if err != nil {
+		errorResponse := &types.HandlerErrorResponse{
+			Type:       err.Type,
+			Message:    err.Message,
+			StatusCode: err.StatusCode,
+			Error:      err.Error,
+		}
+		return nil, errorResponse
+	}
+
+	return user, nil
+
 }

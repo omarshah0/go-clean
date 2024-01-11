@@ -1,6 +1,6 @@
 package types
 
-type HandlerErrorResponse struct {
+type StorageErrorResponse struct {
 	Type       string      `json:"type"`
 	Message    string      `json:"message"`
 	StatusCode int         `json:"status_code"`

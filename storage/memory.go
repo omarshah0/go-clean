@@ -11,6 +11,15 @@ func NewMemoryStorage(config *config.Config) (*MemoryStore, error) {
 	return &MemoryStore{}, nil
 }
 
-func (s *MemoryStore) GetAllUsers() ([]*types.User, error) {
+func (s *MemoryStore) GetAll() ([]*types.User, *types.StorageErrorResponse) {
 	return []*types.User{{Name: "Omar Farooq Shah", Email: "omar@gmail.com"}}, nil
+}
+
+func (s *MemoryStore) GetById(id int) (*types.User, *types.StorageErrorResponse) {
+	return nil, &types.StorageErrorResponse{
+		Type:       "NotFound",
+		Message:    "Resource not found",
+		StatusCode: 404,
+		Error:      "Resource not found",
+	}
 }

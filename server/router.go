@@ -49,7 +49,8 @@ func setupRoutes(rawRouter *gin.Engine, storage storage.Storage) error {
 	driverRoutes := router.Group("/admin")
 	driverRoutes.Use(middleware.AuthMiddleware("admin"))
 	driverRoutes.Use(middleware.Logging())
-	driverRoutes.POST("/", handleUserRoutes(storage))
+	driverRoutes.GET("/", handleUserRoutes(storage))
+	driverRoutes.GET("/:id", handleGetUserById(storage))
 
 	// Customer Routes
 	customerRoutes := router.Group("/customer")
@@ -81,6 +82,17 @@ func handleLoginRoute(storage storage.Storage) gin.HandlerFunc {
 func handleUserRoutes(storage storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		response, err := handlers.HandleGetAllUsers(storage)
+		if err != nil {
+			sendErrorResponse(c, err)
+			return
+		}
+		sendSuccessResponse(c, response, 200)
+	}
+}
+
+func handleGetUserById(storage storage.Storage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		response, err := handlers.HandleGetUserById(storage)
 		if err != nil {
 			sendErrorResponse(c, err)
 			return
