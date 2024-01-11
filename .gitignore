@@ -4,3 +4,5 @@ bin
 tmp
 
 file.csv
+
+go-clean-architecture
