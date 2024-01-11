@@ -12,5 +12,5 @@ func NewMemoryStorage(config *config.Config) (*MemoryStore, error) {
 }
 
 func (s *MemoryStore) GetAllUsers() ([]*types.User, error) {
-	return []*types.User{}, nil
+	return []*types.User{{Name: "Omar Farooq Shah", Email: "omar@gmail.com"}}, nil
 }
