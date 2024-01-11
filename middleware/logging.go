@@ -2,8 +2,11 @@ package middleware
 
 import (
 	"bytes"
+	"encoding/csv"
 	"io"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +15,19 @@ import (
 type bodyLogWriter struct {
 	gin.ResponseWriter
 	body *bytes.Buffer
+}
+
+type LogEntry struct {
+	Method       string
+	Path         string
+	UserType     string
+	UserEmail    string
+	Status       string
+	StartTime    string
+	EndTime      string
+	Duration     string
+	Payload      string
+	ResponseBody string
 }
 
 func (w bodyLogWriter) Write(b []byte) (int, error) {
@@ -35,18 +51,20 @@ func Logging() gin.HandlerFunc {
 
 		// Log after processing the request
 		endTime := time.Now()
-		log.Printf("HTTP method: %s, path: %s, user_type: %s, email: %s, status: %d, start time: %s, end time: %s, duration: %s, payload: %s, response body: %s",
-			c.Request.Method,
-			c.Request.URL.Path,
-			c.GetString("user_type"),
-			c.GetString("user_email"),
-			c.Writer.Status(),
-			startTime.Format(time.RFC3339),
-			endTime.Format(time.RFC3339),
-			endTime.Sub(startTime),
-			payload,
-			writer.body.String(),
-		)
+		logEntry := LogEntry{
+			Method:       c.Request.Method,
+			Path:         c.Request.URL.Path,
+			UserType:     c.GetString("user_type"),
+			UserEmail:    c.GetString("user_email"),
+			Status:       strconv.Itoa(c.Writer.Status()),
+			StartTime:    startTime.Format(time.RFC3339),
+			EndTime:      endTime.Format(time.RFC3339),
+			Duration:     endTime.Sub(startTime).String(),
+			Payload:      payload,
+			ResponseBody: writer.body.String(),
+		}
+
+		go saveLogToFile(logEntry, "file.csv")
 	}
 }
 
@@ -57,4 +75,28 @@ func readBody(c *gin.Context) string {
 	}
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 	return string(bodyBytes)
+}
+
+func saveLogToFile(logEntry LogEntry, filename string) {
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("failed opening file: %s", err)
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	writer.Write([]string{
+		logEntry.Method,
+		logEntry.Path,
+		logEntry.UserType,
+		logEntry.UserEmail,
+		logEntry.Status,
+		logEntry.StartTime,
+		logEntry.EndTime,
+		logEntry.Duration,
+		logEntry.Payload,
+		logEntry.ResponseBody,
+	})
 }
