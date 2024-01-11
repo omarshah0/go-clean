@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/omarshah0/go-clean-architecture/middleware"
 	"github.com/omarshah0/go-clean-architecture/storage"
 	"github.com/omarshah0/go-clean-architecture/types"
@@ -22,8 +20,6 @@ func HandleLoginUser(s storage.Storage) (string, *types.HandlerErrorResponse) {
 		}
 		return "", errorResponse
 	}
-
-	fmt.Println("Token ", token)
 
 	return token, nil
 }
