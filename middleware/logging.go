@@ -20,6 +20,7 @@ type BodyLogWriter struct {
 type LogEntry struct {
 	Method       string
 	IPAddress    string
+	Trace        string
 	Path         string
 	UserType     string
 	UserEmail    string
@@ -66,6 +67,7 @@ func Logging() gin.HandlerFunc {
 			Method:       c.Request.Method,
 			IPAddress:    c.ClientIP(),
 			Path:         c.Request.URL.Path,
+			Trace:        c.GetString("X-Trace-ID"),
 			UserType:     c.GetString("user_type"),
 			UserEmail:    c.GetString("user_email"),
 			Status:       strconv.Itoa(c.Writer.Status()),
@@ -93,6 +95,7 @@ func saveLogToFile(logEntry *LogEntry, filename string) {
 	writer.Write([]string{
 		logEntry.Method,
 		logEntry.IPAddress,
+		logEntry.Trace,
 		logEntry.Path,
 		logEntry.UserType,
 		logEntry.UserEmail,
