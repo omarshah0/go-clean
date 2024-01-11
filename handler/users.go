@@ -7,7 +7,7 @@ import (
 )
 
 func HandleLoginUser(s storage.Storage) (string, *types.HandlerErrorResponse) {
-	user := types.User{Name: "Omar Farooq Shah", Email: "oemyoem55@gmail.com", Type: types.Admin}
+	user := types.User{Name: "Omar Farooq Shah", Email: "oemyoem55@gmail.com", Type: types.Customer}
 
 	token, err := middleware.GenerateToken(&user)
 
@@ -55,4 +55,30 @@ func HandleGetUserById(s storage.Storage) (*types.User, *types.HandlerErrorRespo
 
 	return user, nil
 
+}
+
+func HandleCreateUser(user *types.User, s storage.Storage) (*types.User, *types.HandlerErrorResponse) {
+	if err := user.Validate(); err != nil {
+		errorResponse := &types.HandlerErrorResponse{
+			Type:       "BadRequest",
+			Message:    "Invalid request body",
+			StatusCode: 400,
+			Error:      err.Error(),
+		}
+		return nil, errorResponse
+	}
+
+	user, err := s.Create(user)
+
+	if err != nil {
+		errorResponse := &types.HandlerErrorResponse{
+			Type:       err.Type,
+			Message:    err.Message,
+			StatusCode: err.StatusCode,
+			Error:      err.Error,
+		}
+		return nil, errorResponse
+	}
+
+	return user, nil
 }

@@ -50,13 +50,14 @@ func setupRoutes(rawRouter *gin.Engine, storage storage.Storage) error {
 	driverRoutes.Use(middleware.AuthMiddleware("admin"))
 	driverRoutes.Use(middleware.Logging())
 	driverRoutes.GET("/", handleUserRoutes(storage))
-	driverRoutes.GET("/:id", handleGetUserById(storage))
 
 	// Customer Routes
 	customerRoutes := router.Group("/customer")
 	customerRoutes.Use(middleware.AuthMiddleware("customer"))
 	customerRoutes.Use(middleware.Logging())
 	customerRoutes.GET("/", handleUserRoutes(storage))
+	customerRoutes.POST("/", handleCreateUser(storage))
+	customerRoutes.GET("/:id", handleGetUserById(storage))
 
 	// Not Found
 	rawRouter.Use(middleware.Logging())
@@ -77,11 +78,35 @@ func handleLoginRoute(storage storage.Storage) gin.HandlerFunc {
 	}
 }
 
-// User Routes
+// Customer Routes
 
 func handleUserRoutes(storage storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		response, err := handlers.HandleGetAllUsers(storage)
+		if err != nil {
+			sendErrorResponse(c, err)
+			return
+		}
+		sendSuccessResponse(c, response, 200)
+	}
+}
+
+func handleCreateUser(storage storage.Storage) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := new(types.User)
+
+		if err := c.ShouldBindJSON(&user); err != nil {
+			errMessage := &types.HandlerErrorResponse{
+				Type:       "BadRequest",
+				Message:    "Invalid request body",
+				StatusCode: 400,
+				Error:      err.Error(),
+			}
+			sendErrorResponse(c, errMessage)
+			return
+		}
+
+		response, err := handlers.HandleCreateUser(user, storage)
 		if err != nil {
 			sendErrorResponse(c, err)
 			return
