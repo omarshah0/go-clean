@@ -44,6 +44,7 @@ func setupRoutes(rawRouter *gin.Engine, storage storage.Storage) error {
 
 	// Auth Routes
 	router.GET("/auth", handleLoginRoute(storage))
+
 	// Admin Routes
 	driverRoutes := router.Group("/admin")
 	driverRoutes.Use(middleware.AuthMiddleware("admin"))
@@ -57,38 +58,38 @@ func setupRoutes(rawRouter *gin.Engine, storage storage.Storage) error {
 	customerRoutes.GET("/", handleUserRoutes(storage))
 
 	// Not Found
-	router.Use(middleware.Logging())
+	rawRouter.Use(middleware.Logging())
 	rawRouter.NoRoute(handleNotFoundRoute)
 	return nil
 }
 
+// Auth Routes
+
 func handleLoginRoute(storage storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		response, err := handlers.HandleLoginUser(storage)
-
 		if err != nil {
 			sendErrorResponse(c, err)
 			return
 		}
-
 		sendSuccessResponse(c, response, 200)
-
 	}
 }
+
+// User Routes
 
 func handleUserRoutes(storage storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		response, err := handlers.HandleGetAllUsers(storage)
-
 		if err != nil {
 			sendErrorResponse(c, err)
 			return
 		}
-
 		sendSuccessResponse(c, response, 200)
-
 	}
 }
+
+// Not Found Routes
 
 func handleNotFoundRoute(c *gin.Context) {
 	sendErrorResponse(c, &types.HandlerErrorResponse{
