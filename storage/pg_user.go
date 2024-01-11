@@ -24,8 +24,9 @@ func (s *PostgresStore) GetAll() ([]*types.User, *types.HandlerErrorResponse) {
 
 func (s *PostgresStore) GetById(id int) (*types.User, *types.HandlerErrorResponse) {
 	user := new(types.User)
-	result := s.db.First(&user, id)
 	err := new(types.HandlerErrorResponse)
+
+	result := s.db.First(&user, id)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		err.Type = "NotFound"
@@ -40,8 +41,9 @@ func (s *PostgresStore) GetById(id int) (*types.User, *types.HandlerErrorRespons
 }
 
 func (s *PostgresStore) Create(user *types.User) (*types.User, *types.HandlerErrorResponse) {
-	result := s.db.Create(&user)
 	err := new(types.HandlerErrorResponse)
+
+	result := s.db.Create(&user)
 
 	if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
 		err.Type = "DuplicateError"
