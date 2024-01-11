@@ -49,15 +49,15 @@ func setupRoutes(rawRouter *gin.Engine, storage storage.Storage) error {
 	driverRoutes := router.Group("/admin")
 	driverRoutes.Use(middleware.AuthMiddleware("admin"))
 	driverRoutes.Use(middleware.Logging())
-	driverRoutes.GET("/", handleUserRoutes(storage))
 
 	// Customer Routes
 	customerRoutes := router.Group("/customer")
 	customerRoutes.Use(middleware.AuthMiddleware("customer"))
 	customerRoutes.Use(middleware.Logging())
-	customerRoutes.GET("/", handleUserRoutes(storage))
-	customerRoutes.POST("/", handleCreateUser(storage))
+
+	customerRoutes.GET("/", handleGetAllUsers(storage))
 	customerRoutes.GET("/:id", handleGetUserById(storage))
+	customerRoutes.POST("/", handleCreateUser(storage))
 
 	// Not Found
 	rawRouter.Use(middleware.Logging())
@@ -66,7 +66,6 @@ func setupRoutes(rawRouter *gin.Engine, storage storage.Storage) error {
 }
 
 // Auth Routes
-
 func handleLoginRoute(storage storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		response, err := handlers.HandleLoginUser(storage)
@@ -79,8 +78,7 @@ func handleLoginRoute(storage storage.Storage) gin.HandlerFunc {
 }
 
 // Customer Routes
-
-func handleUserRoutes(storage storage.Storage) gin.HandlerFunc {
+func handleGetAllUsers(storage storage.Storage) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		response, err := handlers.HandleGetAllUsers(storage)
 		if err != nil {
@@ -127,7 +125,6 @@ func handleGetUserById(storage storage.Storage) gin.HandlerFunc {
 }
 
 // Not Found Routes
-
 func handleNotFoundRoute(c *gin.Context) {
 	sendErrorResponse(c, &types.HandlerErrorResponse{
 		Type:       "NotFound",

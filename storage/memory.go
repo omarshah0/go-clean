@@ -23,3 +23,7 @@ func (s *MemoryStore) GetById(id int) (*types.User, *types.StorageErrorResponse)
 		Error:      "Resource not found",
 	}
 }
+
+func (s *MemoryStore) Create(user *types.User) (*types.User, *types.StorageErrorResponse) {
+	return user, nil
+}
