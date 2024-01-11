@@ -7,7 +7,7 @@ type Config struct {
 
 func NewConfig() *Config {
 	return &Config{
-		Port:        ":3000",
+		Port:        ":8080",
 		DatabaseUrl: "postgres://postgres:Unclesnoopdog@69@localhost:5432/go_clean",
 	}
 }
