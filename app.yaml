@@ -1,3 +1,1 @@
 runtime: go121
-
-entrypoint: ./go-clean-architecture
